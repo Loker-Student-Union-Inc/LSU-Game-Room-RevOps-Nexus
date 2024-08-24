@@ -28,8 +28,9 @@ import java.util.Map;
 public class AppHeartbeatExtension implements HeartbeatExtension {
 
     // Injects the build timestamp from the application properties
-    @Value("${application.buildTimestamp}")
+    @Value("${application.buildTimestamp:default-timestamp}")
     private String buildTimestamp;
+
 
     /**
      * Adds custom data to the heartbeat response.

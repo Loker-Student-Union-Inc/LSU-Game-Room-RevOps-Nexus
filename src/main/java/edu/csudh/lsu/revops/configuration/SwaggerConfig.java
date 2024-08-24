@@ -1,22 +1,17 @@
 package edu.csudh.lsu.revops.configuration;
 
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 /**
  * <p>
- * SwaggerConfig class is responsible for configuring Swagger for API documentation.
+ * SwaggerConfig class is responsible for configuring OpenAPI (Swagger) for API documentation.
  * </p>
  *
  * <p>
- * This class sets up Swagger to document all REST APIs available in the application.
- * It enables Swagger using the @EnableSwagger2 annotation and provides a Docket bean
- * that specifies the API documentation type and the paths to include in the documentation.
+ * This class sets up OpenAPI to document all REST APIs available in the application.
  * </p>
  *
  * <p>
@@ -29,28 +24,24 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
  * </p>
  */
 @Configuration
-@EnableSwagger2
 public class SwaggerConfig {
 
     /**
-     * Creates a Docket bean to configure Swagger.
+     * Creates an OpenAPI bean to configure the OpenAPI (Swagger) documentation.
      *
      * <p>
-     * The Docket bean defines which APIs will be documented by Swagger.
-     * It uses {@link RequestHandlerSelectors#any()} to select all available APIs
-     * and {@link PathSelectors#any()} to document all paths.
+     * The OpenAPI bean defines the metadata for the API documentation, such as the title,
+     * description, and version.
      * </p>
      *
-     * @return A Docket configured for Swagger 2.
+     * @return An OpenAPI object configured with API metadata.
      */
     @Bean
-    public Docket api() {
-        return new Docket(DocumentationType.SWAGGER_2)
-                .select()
-                // Select all APIs in the application for documentation
-                .apis(RequestHandlerSelectors.any())
-                // Document all API paths
-                .paths(PathSelectors.any())
-                .build();
+    public OpenAPI customOpenAPI() {
+        return new OpenAPI()
+                .info(new Info()
+                        .title("LSU Game Room RevOps Nexus API")
+                        .description("API documentation for the RevOps Nexus system")
+                        .version("1.0.0"));
     }
 }

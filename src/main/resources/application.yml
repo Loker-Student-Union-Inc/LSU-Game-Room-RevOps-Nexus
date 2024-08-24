@@ -2,6 +2,7 @@
 spring:
   application:
     name: LSU-Game-Room-RevOps-Nexus
+    buildTimestamp: ${buildTimestamp}
 
   # Database Configuration
   datasource:
@@ -34,6 +35,9 @@ management:
     web:
       exposure:
         include: env, health, info, metrics, monitor
+
+application:
+  buildTimestamp: ${buildTimestamp}
 
 # Logging Configuration
 logging:
