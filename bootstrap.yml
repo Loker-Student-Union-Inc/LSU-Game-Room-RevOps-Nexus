@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: LSU-Game-Room-RevOps-Nexus
+  cloud:
+    config:
+      uri: http://localhost:8888  # Config Server URI
+  profiles:
+    active: stage  # or 'prod' based on the environment
+  kafka:
+    bootstrap-servers: localhost:9092  # Kafka Broker Address
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: refresh, bus-refresh
+
+

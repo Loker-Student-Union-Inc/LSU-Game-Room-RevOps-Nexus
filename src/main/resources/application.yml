@@ -1,0 +1,48 @@
+# Application Name
+spring:
+  application:
+    name: LSU-Game-Room-RevOps-Nexus
+
+  # Database Configuration
+  datasource:
+    url: jdbc:postgresql://lsu-comet-11289.6wr.aws-us-west-2.cockroachlabs.cloud:26257/LSU?sslmode=verify-full&user=lus-admin&password=K7FlKUwcx30Yd0T1eKkd6Q
+    username: digvijay
+    password: password  # Replace with your actual password
+    driver-class-name: org.postgresql.Driver
+
+  # JPA/Hibernate Configuration
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+      jdbc:
+        lob:
+          non_contextual_creation: true
+      format_sql: true
+      use_sql_comments: true
+
+# Retry Configuration
+retry:
+  backoffPeriod:
+    ms: 2000  # Example value, will be adjusted as needed
+  maxAttempts: 5  # Example value, will be adjusted as needed
+
+# Management Endpoints Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: env, health, info, metrics, monitor
+
+# Logging Configuration
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: DEBUG
+        type:
+          descriptor:
+            sql:
+              BasicBinder: TRACE
+      springframework: INFO

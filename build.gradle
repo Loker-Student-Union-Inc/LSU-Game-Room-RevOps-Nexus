@@ -7,7 +7,22 @@ plugins {
 }
 
 group = 'edu.csudh.lsu.revops'
-version = "${releaseStage}"
+
+// Dynamically fetch the latest Git tag as the version
+version = getVersionFromGit()
+
+def getVersionFromGit() {
+    try {
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'describe', '--tags'
+            standardOutput = stdout
+        }
+        return stdout.toString().trim()
+    } catch (Exception ignored) {
+        return "1.0-SNAPSHOT"
+    }
+}
 
 java {
     toolchain {
@@ -25,42 +40,71 @@ repositories {
     mavenCentral()
     maven { url 'https://repo.spring.io/milestone' }
     maven { url 'https://repo.spring.io/snapshot' }
-}
 
-dependencies {
-    // Spring Boot Starters
-    implementation 'org.springframework.boot:spring-boot-starter-graphql'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
+    // Repository for GitHub Packages (Persistence Dependency)
+    maven {
+        url = uri("https://maven.pkg.github.com/Loker-Student-Union-Inc/csudh-lsu-cockroachdb-persistance")
+        credentials {
+            username = project.findProperty("gpr.user") ?: System.getenv("USERNAME_GITHUB")
+            password = project.findProperty("gpr.token") ?: System.getenv("TOKEN_GITHUB")
+        }
+    }
 
-    // Spring Cloud Config
-    implementation 'org.springframework.cloud:spring-cloud-starter-config'
 
-    // Lombok
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+    dependencies {
+        // Spring Boot Starters
+        implementation 'org.springframework.boot:spring-boot-starter-graphql'
+        implementation 'org.springframework.boot:spring-boot-starter-web'
+        implementation 'org.springframework.boot:spring-boot-starter-data-jpa' // JPA dependency added
 
-    // Development Tools
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+        // Removed Spring Cloud Config and Kafka dependencies
 
-    // Provided Runtime
-    providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
+        implementation 'org.springframework.boot:spring-boot-starter'
+        implementation 'org.springframework.boot:spring-boot-starter-logging' // Logback included here
 
-    // Testing
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework:spring-webflux'
-    testImplementation 'org.springframework.graphql:spring-graphql-test'
-    testImplementation "org.spockframework:spock-spring:${spockVersion}" // Spock framework
-    testImplementation 'org.codehaus.groovy:groovy-all:3.0.9' // Ensure Groovy is included
+        // Adding the GitHub package dependency with version from gradle.properties
+        implementation "edu.csudh.lsu.persistence:csudh-lsu-cockroachdb-persistance:${cockroachPersistenceVersion}"
 
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
+        // Swagger
+        implementation 'io.springfox:springfox-swagger2:3.0.0'
+        implementation 'io.springfox:springfox-swagger-ui:3.0.0'
 
-tasks.named('test') {
-    useJUnitPlatform()
-}
+        // Lombok
+        compileOnly 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
 
-dependencyManagement {
-    imports {
-        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+        implementation 'org.postgresql:postgresql:42.6.0'
+
+        // https://mvnrepository.com/artifact/org.springframework.retry/spring-retry
+        implementation group: 'org.springframework.retry', name: 'spring-retry', version: '2.0.8'
+
+        // https://mvnrepository.com/artifact/org.springframework/spring-aop
+        implementation group: 'org.springframework', name: 'spring-aop', version: '6.1.12'
+
+        // Development Tools
+        developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+        // Provided Runtime
+        providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
+
+        // Testing
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testImplementation 'org.springframework:spring-webflux'
+        testImplementation 'org.springframework.graphql:spring-graphql-test'
+        testImplementation "org.spockframework:spock-spring:${spockVersion}" // Spock framework
+        testImplementation 'org.codehaus.groovy:groovy-all:3.0.9' // Ensure Groovy is included
+
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    }
+
+    tasks.named('test') {
+        useJUnitPlatform()
+    }
+
+    dependencyManagement {
+        imports {
+            // Adjust the Spring Cloud BOM version if needed, or remove this section if no Spring Cloud dependencies are required
+            mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+        }
     }
 }
