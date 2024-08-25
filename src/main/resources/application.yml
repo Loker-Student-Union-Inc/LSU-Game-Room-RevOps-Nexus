@@ -22,6 +22,8 @@ spring:
           non_contextual_creation: true
       format_sql: true
       use_sql_comments: true
+    properties:
+      hibernate.jdbc.lob.non_contextual_creation: true
 
 # Retry Configuration
 retry:
@@ -50,3 +52,10 @@ logging:
             sql:
               BasicBinder: TRACE
       springframework: INFO
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+

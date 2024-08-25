@@ -10,10 +10,13 @@
         </encoder>
     </appender>
 
+    <!-- Rolling file appender -->
     <appender name="ROLLING_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/app.log</file>
+        <!-- The industry-standard naming convention is to use application.log -->
+        <file>logs/application.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>logs/app.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <!-- The rolling file pattern uses the date for daily logs -->
+            <fileNamePattern>logs/application.%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>30</maxHistory>
         </rollingPolicy>
         <encoder>
@@ -21,27 +24,13 @@
         </encoder>
     </appender>
 
+    <!-- Root logger configuration -->
     <root level="INFO">
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="ROLLING_FILE" />
     </root>
 
-    <!-- File appender -->
-    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <file>logs/app.log</file>
-        <append>true</append>
-        <encoder>
-            <pattern>${LOG_PATTERN}</pattern>
-        </encoder>
-    </appender>
-
-    <!-- Set the root logger level and appender -->
-    <root level="INFO">
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="FILE" />
-    </root>
-
-    <!-- Logger specific configurations -->
+    <!-- Specific logger configuration for package com.example -->
     <logger name="com.example" level="DEBUG" additivity="false">
         <appender-ref ref="CONSOLE" />
     </logger>

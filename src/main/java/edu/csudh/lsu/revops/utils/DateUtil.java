@@ -1,7 +1,10 @@
 package edu.csudh.lsu.revops.utils;
 
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 
 /**
@@ -113,4 +116,25 @@ public class DateUtil {
             return null;
         }
     }
+
+    /**
+     * Converts {@link Time} to {@link Timestamp}.
+     *
+     * @param time the {@link Time} object to convert
+     * @return the corresponding {@link Timestamp}, or {@code null} if the input is null
+     */
+    public static Timestamp convertTimeToTimestamp(Time time) {
+        return time != null ? new Timestamp(time.getTime()) : null;
+    }
+
+    /**
+     * Converts {@link Date} to {@link LocalDate}.
+     *
+     * @param date the {@link Date} object to convert
+     * @return the corresponding {@link LocalDate}, or {@code null} if the input is null
+     */
+    public static LocalDate convertDateToLocalDate(Date date) {
+        return date != null ? date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate() : null;
+    }
+
 }

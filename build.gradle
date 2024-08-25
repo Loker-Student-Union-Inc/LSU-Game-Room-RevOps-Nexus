@@ -7,8 +7,6 @@ plugins {
 }
 
 group = 'edu.csudh.lsu.revops'
-
-// Dynamically fetch the latest Git tag as the version
 version = getVersionFromGit()
 
 def getVersionFromGit() {
@@ -34,14 +32,20 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
+    developmentOnly
+    runtimeClasspath {
+        extendsFrom developmentOnly
+    }
 }
 
 repositories {
     mavenCentral()
     maven { url 'https://repo.spring.io/milestone' }
     maven { url 'https://repo.spring.io/snapshot' }
-
-    // Repository for GitHub Packages (Persistence Dependency)
+    mavenLocal()
+    flatDir {
+        dir rootProject.file('lib')
+    }
     maven {
         url = uri("https://maven.pkg.github.com/Loker-Student-Union-Inc/csudh-lsu-cockroachdb-persistance")
         credentials {
@@ -49,66 +53,81 @@ repositories {
             password = project.findProperty("gpr.token") ?: System.getenv("TOKEN_GITHUB")
         }
     }
+}
 
+dependencies {
+    // Spring Boot Starters
+    implementation 'org.springframework.boot:spring-boot-starter-graphql'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter'
 
-    dependencies {
-        // Spring Boot Starters
-        implementation 'org.springframework.boot:spring-boot-starter-graphql'
-        implementation 'org.springframework.boot:spring-boot-starter-web'
-        implementation 'org.springframework.boot:spring-boot-starter-data-jpa' // JPA dependency added
+    // Logback
+    implementation 'org.springframework.boot:spring-boot-starter-logging'
 
-        // Removed Spring Cloud Config and Kafka dependencies
+    // GitHub package dependency
+    implementation "edu.csudh.lsu.persistence:csudh-lsu-cockroachdb-persistance:${cockroachPersistenceVersion}"
 
-        implementation 'org.springframework.boot:spring-boot-starter'
-        implementation 'org.springframework.boot:spring-boot-starter-logging' // Logback included here
+    // Swagger
+    implementation 'org.springdoc:springdoc-openapi-ui:1.7.0'
 
-        // Adding the GitHub package dependency with version from gradle.properties
-        implementation "edu.csudh.lsu.persistence:csudh-lsu-cockroachdb-persistance:${cockroachPersistenceVersion}"
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 
-        // Swagger
-        implementation 'org.springdoc:springdoc-openapi-ui:1.7.0'
+    // PostgreSQL
+    implementation 'org.postgresql:postgresql:42.6.0'
 
-        // Lombok
-        compileOnly 'org.projectlombok:lombok'
-        annotationProcessor 'org.projectlombok:lombok'
+    // Spring Retry
+    implementation group: 'org.springframework.retry', name: 'spring-retry', version: '2.0.8'
 
-        implementation 'org.postgresql:postgresql:42.6.0'
+    // Spring AOP
+    implementation group: 'org.springframework', name: 'spring-aop', version: '6.1.12'
 
-        // https://mvnrepository.com/artifact/org.springframework.retry/spring-retry
-        implementation group: 'org.springframework.retry', name: 'spring-retry', version: '2.0.8'
+    // Logback-Classic
+    testImplementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.5.7'
 
-        // https://mvnrepository.com/artifact/org.springframework/spring-aop
-        implementation group: 'org.springframework', name: 'spring-aop', version: '6.1.12'
+    // Development Tools
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
-        // Development Tools
-        developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    // Provided Runtime
+    providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
 
-        // Provided Runtime
-        providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
+    // Testing
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework:spring-webflux'
+    testImplementation 'org.springframework.graphql:spring-graphql-test'
+    testImplementation "org.spockframework:spock-spring:${spockVersion}"
+    testImplementation 'org.codehaus.groovy:groovy-all:3.0.9'
 
-        // Testing
-        testImplementation 'org.springframework.boot:spring-boot-starter-test'
-        testImplementation 'org.springframework:spring-webflux'
-        testImplementation 'org.springframework.graphql:spring-graphql-test'
-        testImplementation "org.spockframework:spock-spring:${spockVersion}" // Spock framework
-        testImplementation 'org.codehaus.groovy:groovy-all:3.0.9' // Ensure Groovy is included
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
 
-        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    }
+tasks.named('test') {
+    useJUnitPlatform()
+}
 
-    tasks.named('test') {
-        useJUnitPlatform()
-    }
+springBoot {
+    buildInfo()
+}
 
-    dependencyManagement {
-        imports {
-            // Adjust the Spring Cloud BOM version if needed, or remove this section if no Spring Cloud dependencies are required
-            mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
-        }
-    }
+bootWar {
+    enabled = true
+    archiveClassifier = 'boot'
+}
+
+war {
+    enabled = true
+    archiveClassifier = ''
 }
 
 def buildTimestamp = new Date().format("yyyy-MM-dd'T'HH:mm:ss'Z'")
+
+bootRun {
+    if (project.hasProperty('jvmArgs')) {
+        jvmArgs project.jvmArgs.split('\\s+')
+    }
+}
 
 processResources {
     filesMatching('**/application.yml') {
@@ -116,3 +135,23 @@ processResources {
     }
 }
 
+processTestResources {
+    filesMatching('**/application.yml') {
+        filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [
+                "applicationVersion": project.version.toString(),
+                "applicationBuildTimestamp": getDate()
+        ])
+    }
+}
+
+configurations.all {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        if (details.requested.group == 'org.apache.logging.log4j') {
+            details.useVersion '2.17.0'
+        }
+    }
+}
+
+def getDate() {
+    return buildTimestamp
+}
