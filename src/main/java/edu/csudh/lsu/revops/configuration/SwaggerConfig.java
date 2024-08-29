@@ -1,6 +1,7 @@
 package edu.csudh.lsu.revops.configuration;
 
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,7 +17,7 @@ import org.springframework.context.annotation.Configuration;
  *
  * <p>
  * Created by: Digvijay Hethur Jagadeesha
- * Date: August 22 2024
+ * Date: August 22, 2024
  * </p>
  *
  * <p>
@@ -42,6 +43,15 @@ public class SwaggerConfig {
                 .info(new Info()
                         .title("LSU Game Room RevOps Nexus API")
                         .description("API documentation for the RevOps Nexus system")
-                        .version("1.0.0"));
+                        .version("1.0.0")
+                        .contact(new Contact()
+                                .name("Digvijay Hethur Jagadeesha")
+                                .email("dhethurjagadeessha1@toromail.csudh.edu")
+                        )
+                        .termsOfService("Terms of service")
+                        .license(new io.swagger.v3.oas.models.info.License()
+                                .name("License of API")
+                                .url("API license URL"))
+                );
     }
 }
