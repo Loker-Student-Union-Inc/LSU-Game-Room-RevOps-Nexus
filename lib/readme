@@ -1,0 +1,2 @@
+Add the csudh-lsu-cockroachdb-persistance-1.0-SNAPSHOT.jar to lib folder and update the version in gradle.properties
+while pointing to local version.

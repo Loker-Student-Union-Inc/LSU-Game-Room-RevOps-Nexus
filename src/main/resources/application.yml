@@ -53,9 +53,10 @@ logging:
               BasicBinder: TRACE
       springframework: INFO
 
+# Springdoc OpenAPI Configuration
 springdoc:
   api-docs:
-    path: /v3/api-docs
+    path: /v3/api-docs  # Defines the path for the OpenAPI JSON documentation
   swagger-ui:
-    path: /swagger-ui.html
+    path: /swagger-ui.html  # Defines the path for the Swagger UI
 

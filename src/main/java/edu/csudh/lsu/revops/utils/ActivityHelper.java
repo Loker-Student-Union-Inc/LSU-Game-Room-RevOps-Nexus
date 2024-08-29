@@ -1,9 +1,13 @@
 package edu.csudh.lsu.revops.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.csudh.lsu.persistence.model.activity.Activity;
 import edu.csudh.lsu.revops.model.ActivityResponse;
+import jakarta.persistence.PersistenceException;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -29,13 +33,14 @@ import java.util.Map;
  * All Rights Reserved by Loker Student Union, Inc at California State University Dominguez Hills from 2024.
  * </p>
  */
+@Slf4j
 @Getter
 @Builder
 public class ActivityHelper {
 
     private String activity;
     private String category;
-    private Integer price;
+    private String price;
     private String imageLocation;
     private Timestamp createdTime;
     private LocalDate createdDate;
@@ -81,11 +86,21 @@ public class ActivityHelper {
      */
     public static Activity toActivity(ActivityResponse response) {
         Activity activity = new Activity();
+        String priceJson = null;
+        log.info("Price Before Conversion {},", response.getPrice());
+
+        if (response.getPrice() != null) {
+            priceJson = convertPriceMapToJson(response.getPrice());
+        }
+        log.info("Price After Conversion {},", priceJson);
         activity.setActivity(response.getActivity());
         activity.setCategory(response.getCategory());
-        activity.setPrice(response.getPrice());
+        activity.setPrice(priceJson);
         activity.setImageLocation(response.getImageLocation());
         // You may also want to set additional fields like ID, timestamps, etc. if required.
+
+        log.info("Activity {},", activity);
+
         return activity;
     }
 
@@ -100,6 +115,8 @@ public class ActivityHelper {
 
         // Convert Date to LocalDate using DateUtil
         LocalDate createdDate = DateUtil.convertDateToLocalDate(activity.getCreatedDate());
+
+
 
         return ActivityHelper.builder()
                 .activity(activity.getActivity())
@@ -130,7 +147,7 @@ public class ActivityHelper {
                     activity.setCategory((String) value);
                     break;
                 case "price":
-                    activity.setPrice((Integer) value);
+                    activity.setPrice((String) value);
                     break;
                 case "imageLocation":
                     activity.setImageLocation((String) value);
@@ -141,4 +158,17 @@ public class ActivityHelper {
             }
         });
     }
+
+    private static String convertPriceMapToJson(Map<String, Map<String, String>> priceMap) {
+        try {
+            var objectMapper = new ObjectMapper();
+            String response = objectMapper.writeValueAsString(priceMap);
+            log.info("Price {}", response);
+            return response;
+        } catch (JsonProcessingException e) {
+            log.error("Failed to convert price map to JSON", e);
+            throw new PersistenceException("Failed to convert price map to JSON", e);
+        }
+    }
+
 }

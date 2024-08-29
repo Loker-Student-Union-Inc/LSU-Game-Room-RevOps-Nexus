@@ -17,7 +17,7 @@ import java.util.UUID;
  * </p>
  *
  * <p>
- * This class acts as the entry point for requests related to saving, updating, and retrieving activity data.
+ * This class acts as the entry point for requests related to creating, updating, deleting, and retrieving activity data.
  * It interacts with the {@code RevOpsActivityService} to process the business logic and return appropriate responses.
  * All relevant logging is performed for audit and monitoring purposes.
  * </p>
@@ -50,10 +50,10 @@ public class ActivityController {
      * @param activityResponse The {@code ActivityResponse} object containing activity data from the client.
      * @return {@code ResponseEntity<String>} A response entity with a message indicating the result of the operation.
      */
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<String> createActivity(@RequestBody ActivityResponse activityResponse) {
         try {
-            int result = revOpsActivityService.saveOrUpdateActivity(activityResponse);
+            int result = revOpsActivityService.createActivity(activityResponse);
             if (result > 0) {
                 log.info("Activity successfully created.");
                 return ResponseEntity.ok("Activity created successfully.");
@@ -80,10 +80,10 @@ public class ActivityController {
      * @param activityResponse The {@code ActivityResponse} object containing updated activity data from the client.
      * @return {@code ResponseEntity<String>} A response entity with a message indicating the result of the operation.
      */
-    @PutMapping("/{id}")
+    @PutMapping("/update/{id}")
     public ResponseEntity<String> updateActivity(@PathVariable UUID id, @RequestBody ActivityResponse activityResponse) {
         try {
-            int result = revOpsActivityService.saveOrUpdateActivity(activityResponse); // Assuming service handles the update logic
+            int result = revOpsActivityService.updateActivity(activityResponse);  // Updated to call update method
             if (result > 0) {
                 log.info("Activity successfully updated.");
                 return ResponseEntity.ok("Activity updated successfully.");
@@ -110,20 +110,47 @@ public class ActivityController {
      * @param updates A map of field names and values to update.
      * @return {@code ResponseEntity<String>} A response entity with a message indicating the result of the operation.
      */
-    @PatchMapping("/{id}")
+    @PatchMapping("/partial-update/{id}")
     public ResponseEntity<String> partialUpdateActivity(@PathVariable UUID id, @RequestBody Map<String, Object> updates) {
         try {
-            int result = revOpsActivityService.partialUpdateActivity(id, updates); // Implement partial update logic in service
+            int result = revOpsActivityService.partialUpdateActivity(id, updates);
             if (result > 0) {
                 log.info("Activity successfully updated.");
-                return ResponseEntity.ok("Activity updated successfully.");
+                return ResponseEntity.ok("Activity partially updated successfully.");
             } else {
-                log.warn("Failed to update activity.");
-                return ResponseEntity.status(500).body("Failed to update activity.");
+                log.warn("Failed to partially update activity.");
+                return ResponseEntity.status(500).body("Failed to partially update activity.");
             }
         } catch (Exception ex) {
-            log.error("Error occurred while updating activity: {}", ex.getMessage(), ex);
-            return ResponseEntity.status(500).body("An error occurred while updating the activity.");
+            log.error("Error occurred while partially updating activity: {}", ex.getMessage(), ex);
+            return ResponseEntity.status(500).body("An error occurred while partially updating the activity.");
+        }
+    }
+
+    /**
+     * Endpoint to delete an activity by ID.
+     *
+     * <p>
+     * This method deletes the activity by its ID in the database. The result of the operation is returned as an HTTP response.
+     * </p>
+     *
+     * @param id The ID of the activity to delete.
+     * @return {@code ResponseEntity<String>} A response entity with a message indicating the result of the operation.
+     */
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<String> deleteActivity(@PathVariable UUID id) {
+        try {
+            int result = revOpsActivityService.deleteActivity(id);
+            if (result > 0) {
+                log.info("Activity successfully deleted.");
+                return ResponseEntity.ok("Activity deleted successfully.");
+            } else {
+                log.warn("Failed to delete activity.");
+                return ResponseEntity.status(500).body("Failed to delete activity.");
+            }
+        } catch (Exception ex) {
+            log.error("Error occurred while deleting activity: {}", ex.getMessage(), ex);
+            return ResponseEntity.status(500).body("An error occurred while deleting the activity.");
         }
     }
 

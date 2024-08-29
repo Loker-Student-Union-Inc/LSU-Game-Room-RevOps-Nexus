@@ -54,7 +54,7 @@ public class ActivityDAO {
     private RetryTemplate retryTemplate;
 
     /**
-     * Saves or updates an activity by interacting with the {@code RevOpsActivityService}.
+     * Saves an activity by interacting with the {@code RevOpsActivityService}.
      *
      * <p>
      * This method attempts to save or update the provided activity data. In case of transient failures,
@@ -65,7 +65,7 @@ public class ActivityDAO {
      * @param activityResponse The {@code ActivityResponse} object containing data from the frontend.
      * @return int The number of records updated (1 for success, 0 for failure).
      */
-    public int saveOrUpdateActivity(ActivityResponse activityResponse) {
+    public int createActivity(ActivityResponse activityResponse) {
         try {
             // Convert ActivityResponse to Activity entity using ActivityHelper
             Activity activity = ActivityHelper.toActivity(activityResponse);
@@ -164,6 +164,69 @@ public class ActivityDAO {
         } catch (Exception ex) {
             log.error("An unexpected error occurred while fetching activity categories.", ex);
             throw new PersistenceException("An exception occurred while fetching categories.", ex.getMessage());
+        }
+    }
+
+    /**
+     * Updates the provided activity.
+     *
+     * <p>
+     * This method attempts to update the provided activity data. In case of transient failures,
+     * retries are handled by the {@code RetryTemplate}. Logging is performed to record each attempt and
+     * its outcome, including successful updates and any exceptions encountered.
+     * </p>
+     *
+     * @param activityResponse The {@code ActivityResponse} object containing updated data.
+     * @return int The number of records updated (1 for success, 0 for failure).
+     */
+    public int updateActivity(ActivityResponse activityResponse) {
+        try {
+            Activity activity = ActivityHelper.toActivity(activityResponse);
+            return retryTemplate.execute(retryContext -> {
+                log.info("Attempt {} to update activity: {} category: {} price: {}",
+                        retryContext.getRetryCount(),
+                        activity.getActivity(), activity.getCategory(), activity.getPrice());
+
+                activityService.updateActivity(activity);
+                log.info("Activity updated successfully.");
+                return 1;
+            });
+        } catch (JDBCConnectionException | JpaSystemException | TransactionException | DataAccessResourceFailureException ex) {
+            log.error("Data access or transaction failure while updating activity.", ex);
+            throw ex;
+        } catch (Exception ex) {
+            log.error("An unexpected error occurred while updating activity.", ex);
+            throw new PersistenceException("An exception occurred while updating a record.", ex.getMessage());
+        }
+    }
+
+    /**
+     * Deletes the activity by ID.
+     *
+     * <p>
+     * This method attempts to delete an activity by its ID. In case of transient failures,
+     * retries are handled by the {@code RetryTemplate}. Logging is performed to record each attempt and
+     * its outcome, including successful deletions and any exceptions encountered.
+     * </p>
+     *
+     * @param id The ID of the activity to delete.
+     * @return int The number of records deleted (1 for success, 0 for failure).
+     */
+    public int deleteActivity(UUID id) {
+        try {
+            return retryTemplate.execute(retryContext -> {
+                log.info("Attempt {} to delete activity with ID: {}", retryContext.getRetryCount(), id);
+
+                activityService.deleteActivity(id);
+                log.info("Activity deleted successfully.");
+                return 1;
+            });
+        } catch (JDBCConnectionException | JpaSystemException | TransactionException | DataAccessResourceFailureException ex) {
+            log.error("Data access or transaction failure while deleting activity with ID: {}", id, ex);
+            throw ex;
+        } catch (Exception ex) {
+            log.error("An unexpected error occurred while deleting activity with ID: {}", id, ex);
+            throw new PersistenceException("An exception occurred while deleting a record.", ex.getMessage());
         }
     }
 }

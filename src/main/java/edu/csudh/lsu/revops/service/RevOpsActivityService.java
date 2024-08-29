@@ -49,10 +49,10 @@ public class RevOpsActivityService {
      * @param activityResponse The {@code ActivityResponse} object containing activity data from the client.
      * @return int The number of records updated (1 for success, 0 for failure).
      */
-    public int saveOrUpdateActivity(ActivityResponse activityResponse) {
+    public int createActivity(ActivityResponse activityResponse) {
         try {
             log.info("Processing saveOrUpdateActivity in RevOpsActivityService.");
-            return activityDAO.saveOrUpdateActivity(activityResponse);
+            return activityDAO.createActivity(activityResponse);
         } catch (Exception ex) {
             log.error("An error occurred in RevOpsActivityService while saving or updating activity: {}", ex.getMessage(), ex);
             throw new PersistenceException("Error occurred while saving or updating activity", ex.getMessage());
@@ -74,9 +74,7 @@ public class RevOpsActivityService {
     public int partialUpdateActivity(UUID id, Map<String, Object> updates) {
         try {
             log.info("Processing partialUpdateActivity in RevOpsActivityService for activity ID: {}", id);
-            // Implement the logic to partially update the activity in the DAO
-            // This might involve fetching the existing activity and applying the updates
-            return activityDAO.partialUpdateActivity(id, updates); // You need to implement this in DAO
+            return activityDAO.partialUpdateActivity(id, updates);
         } catch (Exception ex) {
             log.error("An error occurred in RevOpsActivityService while partially updating activity: {}", ex.getMessage(), ex);
             throw new PersistenceException("Error occurred while partially updating activity", ex.getMessage());
@@ -99,6 +97,47 @@ public class RevOpsActivityService {
         } catch (Exception ex) {
             log.error("An error occurred in RevOpsActivityService while fetching categories: {}", ex.getMessage(), ex);
             throw new PersistenceException("Error occurred while fetching categories", ex.getMessage());
+        }
+    }
+
+    /**
+     * Updates an activity by interacting with the {@code ActivityDAO}.
+     *
+     * <p>
+     * This method processes the incoming {@code ActivityResponse} object and passes it to the DAO layer
+     * for updating the activity in the database.
+     * </p>
+     *
+     * @param activityResponse The {@code ActivityResponse} object containing updated activity data.
+     * @return int The number of records updated (1 for success, 0 for failure).
+     */
+    public int updateActivity(ActivityResponse activityResponse) {
+        try {
+            log.info("Processing updateActivity in RevOpsActivityService.");
+            return activityDAO.updateActivity(activityResponse);
+        } catch (Exception ex) {
+            log.error("An error occurred in RevOpsActivityService while updating activity: {}", ex.getMessage(), ex);
+            throw new PersistenceException("Error occurred while updating activity", ex.getMessage());
+        }
+    }
+
+    /**
+     * Deletes an activity by interacting with the {@code ActivityDAO}.
+     *
+     * <p>
+     * This method deletes the activity by its ID in the DAO layer.
+     * </p>
+     *
+     * @param id The UUID of the activity to delete.
+     * @return int The number of records deleted (1 for success, 0 for failure).
+     */
+    public int deleteActivity(UUID id) {
+        try {
+            log.info("Processing deleteActivity in RevOpsActivityService for activity ID: {}", id);
+            return activityDAO.deleteActivity(id);
+        } catch (Exception ex) {
+            log.error("An error occurred in RevOpsActivityService while deleting activity: {}", ex.getMessage(), ex);
+            throw new PersistenceException("Error occurred while deleting activity", ex.getMessage());
         }
     }
 }
